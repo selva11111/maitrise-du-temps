@@ -1,0 +1,32 @@
+name: chronometrage_arrivee
+description: Application Flutter hors ligne pour le chronometrage sportif et la notation par baremes.
+publish_to: "none"
+version: 0.1.0+1
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+
+dependencies:
+  excel: ^4.0.6
+  file_picker: ^11.0.2
+  file_saver: ^0.3.1
+  flutter:
+    sdk: flutter
+  http: ^1.6.0
+  shared_preferences: ^2.5.5
+  url_launcher: ^6.3.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - FG1.txt
+    - FGE.txt
+    - FS1-OO.txt
+    - FTS .txt
+    - 4re.png
+    - data/participants_exemple.csv
