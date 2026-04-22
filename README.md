@@ -118,6 +118,13 @@ Set-Location -LiteralPath $project
 
 ## Commandes utiles
 
+Etat Git:
+
+```text
+branche: main
+premier commit: 9c0dcd7 Initial Maîtrise du Temps app
+```
+
 Verifier le code:
 
 ```powershell

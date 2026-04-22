@@ -24,6 +24,13 @@ Raison: Gradle/Java a deja pose probleme avec les caracteres speciaux du chemin.
 
 ## Dernier etat fonctionnel
 
+Git est initialise dans le dossier de travail.
+
+```text
+branche: main
+premier commit: 9c0dcd7 Initial Maîtrise du Temps app
+```
+
 Verification reussie avant arret:
 
 ```powershell
