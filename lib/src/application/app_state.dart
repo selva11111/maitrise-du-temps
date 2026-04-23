@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:crypto/crypto.dart';
 import 'package:excel/excel.dart';
 import 'package:file_saver/file_saver.dart';
 import 'package:flutter/foundation.dart';
@@ -14,6 +15,7 @@ import '../domain/models.dart';
 class ChronometrageState extends ChangeNotifier {
   static const _cleSession = 'chronometrage_arrivee_session_v1';
   static const _cleBaremes = 'maitrise_du_temps_baremes_v1';
+  static const _cleMotDePasseAdminHash = 'maitrise_du_temps_admin_hash_v1';
   static const motDePasseAdminParDefaut = 'Castelnaudary2026+';
 
   final _stopwatch = Stopwatch();
@@ -31,6 +33,7 @@ class ChronometrageState extends ChangeNotifier {
   String? sectionSelectionnee;
   String? activiteSelectionnee;
   bool sessionChargee = false;
+  String? _motDePasseAdminHash;
 
   Duration get tempsEcoule => _stopwatch.elapsed;
   bool get estEnCours => _stopwatch.isRunning;
@@ -121,6 +124,7 @@ class ChronometrageState extends ChangeNotifier {
     _sectionsParDefaut = List.unmodifiable(baremes);
     sections = List.unmodifiable(baremes);
     await _chargerBaremesModifies();
+    await _initialiserMotDePasseAdmin();
     sectionSelectionnee = sections.isEmpty ? null : sections.first.id;
     activiteSelectionnee = sections.isEmpty || sections.first.activites.isEmpty
         ? null
@@ -149,7 +153,39 @@ class ChronometrageState extends ChangeNotifier {
   }
 
   bool verifierMotDePasseAdmin(String motDePasse) {
-    return motDePasse.trim() == motDePasseAdminParDefaut;
+    final hash = _motDePasseAdminHash;
+    if (hash == null || hash.isEmpty) return false;
+    return _empreinteMotDePasseAdmin(motDePasse.trim()) == hash;
+  }
+
+  Future<String?> changerMotDePasseAdmin({
+    required String motDePasseActuel,
+    required String nouveauMotDePasse,
+    required String confirmation,
+  }) async {
+    final actuel = motDePasseActuel.trim();
+    final nouveau = nouveauMotDePasse.trim();
+    final confirme = confirmation.trim();
+
+    if (!verifierMotDePasseAdmin(actuel)) {
+      return 'Mot de passe administrateur actuel incorrect.';
+    }
+    if (nouveau != confirme) {
+      return 'La confirmation du nouveau mot de passe est incorrecte.';
+    }
+    final erreur = _validerNouveauMotDePasseAdmin(nouveau);
+    if (erreur != null) return erreur;
+    if (nouveau == actuel) {
+      return 'Le nouveau mot de passe doit être différent de l’ancien.';
+    }
+
+    final prefs = await SharedPreferences.getInstance();
+    final hash = _empreinteMotDePasseAdmin(nouveau);
+    await prefs.setString(_cleMotDePasseAdminHash, hash);
+    _motDePasseAdminHash = hash;
+    _journaliser('Mot de passe administrateur mis à jour.');
+    notifyListeners();
+    return null;
   }
 
   Future<void> mettreAJourRegleBareme({
@@ -644,6 +680,19 @@ class ChronometrageState extends ChangeNotifier {
     }
   }
 
+  Future<void> _initialiserMotDePasseAdmin() async {
+    final prefs = await SharedPreferences.getInstance();
+    final hashEnregistre = prefs.getString(_cleMotDePasseAdminHash);
+    if (hashEnregistre != null && hashEnregistre.isNotEmpty) {
+      _motDePasseAdminHash = hashEnregistre;
+      return;
+    }
+
+    final hashParDefaut = _empreinteMotDePasseAdmin(motDePasseAdminParDefaut);
+    await prefs.setString(_cleMotDePasseAdminHash, hashParDefaut);
+    _motDePasseAdminHash = hashParDefaut;
+  }
+
   Future<void> _sauvegarderSession() async {
     final prefs = await SharedPreferences.getInstance();
     final donnees = {
@@ -665,6 +714,29 @@ class ChronometrageState extends ChangeNotifier {
       'sections': sections.map((section) => section.toJson()).toList(),
     };
     await prefs.setString(_cleBaremes, jsonEncode(donnees));
+  }
+
+  static String _empreinteMotDePasseAdmin(String motDePasse) {
+    return sha256.convert(utf8.encode(motDePasse)).toString();
+  }
+
+  static String? _validerNouveauMotDePasseAdmin(String motDePasse) {
+    if (motDePasse.length < 12) {
+      return 'Le mot de passe doit contenir au moins 12 caractères.';
+    }
+    if (!RegExp(r'[A-Z]').hasMatch(motDePasse)) {
+      return 'Le mot de passe doit contenir au moins une majuscule.';
+    }
+    if (!RegExp(r'[a-z]').hasMatch(motDePasse)) {
+      return 'Le mot de passe doit contenir au moins une minuscule.';
+    }
+    if (!RegExp(r'\d').hasMatch(motDePasse)) {
+      return 'Le mot de passe doit contenir au moins un chiffre.';
+    }
+    if (!RegExp(r'[^A-Za-z0-9]').hasMatch(motDePasse)) {
+      return 'Le mot de passe doit contenir au moins un caractère spécial.';
+    }
+    return null;
   }
 
   void _notifierEtSauvegarder() {

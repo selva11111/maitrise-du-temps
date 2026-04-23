@@ -767,6 +767,11 @@ class _EcranAdministrationBaremesState
         title: const Text('Administration barèmes'),
         actions: [
           IconButton(
+            tooltip: 'Changer le mot de passe admin',
+            onPressed: _changerMotDePasseAdmin,
+            icon: const Icon(Icons.lock_reset),
+          ),
+          IconButton(
             tooltip: 'Rafraîchir les barèmes',
             onPressed: _rafraichirBaremes,
             icon: const Icon(Icons.refresh),
@@ -835,6 +840,11 @@ class _EcranAdministrationBaremesState
                           .toList(),
                       onChanged: (value) => setState(() => _activiteId = value),
                     ),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: _changerMotDePasseAdmin,
+                    icon: const Icon(Icons.lock_reset),
+                    label: const Text('Changer mot de passe admin'),
                   ),
                   OutlinedButton.icon(
                     onPressed: _rafraichirBaremes,
@@ -959,6 +969,21 @@ class _EcranAdministrationBaremesState
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Barèmes rechargés depuis le stockage local.'),
+      ),
+    );
+  }
+
+  Future<void> _changerMotDePasseAdmin() async {
+    final changeEffectue = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => _EcranChangementMotDePasseAdmin(state: widget.state),
+      ),
+    );
+    if (changeEffectue != true || !mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Mot de passe administrateur mis à jour.'),
       ),
     );
   }
@@ -1149,6 +1174,179 @@ class _EcranEditionRegleBaremeState extends State<_EcranEditionRegleBareme> {
         maximumInclus: _maximumInclus,
       ),
     );
+  }
+}
+
+class _EcranChangementMotDePasseAdmin extends StatefulWidget {
+  const _EcranChangementMotDePasseAdmin({required this.state});
+
+  final ChronometrageState state;
+
+  @override
+  State<_EcranChangementMotDePasseAdmin> createState() =>
+      _EcranChangementMotDePasseAdminState();
+}
+
+class _EcranChangementMotDePasseAdminState
+    extends State<_EcranChangementMotDePasseAdmin> {
+  final _actuel = TextEditingController();
+  final _nouveau = TextEditingController();
+  final _confirmation = TextEditingController();
+  String? _erreur;
+  bool _enCours = false;
+  bool _afficherActuel = false;
+  bool _afficherNouveau = false;
+  bool _afficherConfirmation = false;
+
+  @override
+  void dispose() {
+    _actuel.dispose();
+    _nouveau.dispose();
+    _confirmation.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Changer mot de passe admin')),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 520),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'Le mot de passe administrateur est stocké localement sous forme d’empreinte de sécurité.',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Exigences: 12 caractères minimum, avec majuscule, minuscule, chiffre et caractère spécial.',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _actuel,
+                    obscureText: !_afficherActuel,
+                    textInputAction: TextInputAction.next,
+                    decoration: InputDecoration(
+                      border: const OutlineInputBorder(),
+                      labelText: 'Mot de passe actuel',
+                      suffixIcon: IconButton(
+                        onPressed: () =>
+                            setState(() => _afficherActuel = !_afficherActuel),
+                        icon: Icon(
+                          _afficherActuel
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _nouveau,
+                    obscureText: !_afficherNouveau,
+                    textInputAction: TextInputAction.next,
+                    decoration: InputDecoration(
+                      border: const OutlineInputBorder(),
+                      labelText: 'Nouveau mot de passe',
+                      suffixIcon: IconButton(
+                        onPressed: () => setState(
+                          () => _afficherNouveau = !_afficherNouveau,
+                        ),
+                        icon: Icon(
+                          _afficherNouveau
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _confirmation,
+                    obscureText: !_afficherConfirmation,
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) => _valider(),
+                    decoration: InputDecoration(
+                      border: const OutlineInputBorder(),
+                      labelText: 'Confirmer le nouveau mot de passe',
+                      suffixIcon: IconButton(
+                        onPressed: () => setState(
+                          () => _afficherConfirmation = !_afficherConfirmation,
+                        ),
+                        icon: Icon(
+                          _afficherConfirmation
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (_erreur != null) ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      _erreur!,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: _enCours
+                              ? null
+                              : () => Navigator.of(context).pop(false),
+                          child: const Text('Annuler'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: FilledButton(
+                          onPressed: _enCours ? null : _valider,
+                          child: Text(
+                            _enCours ? 'Mise à jour...' : 'Mettre à jour',
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _valider() async {
+    setState(() {
+      _erreur = null;
+      _enCours = true;
+    });
+    final erreur = await widget.state.changerMotDePasseAdmin(
+      motDePasseActuel: _actuel.text,
+      nouveauMotDePasse: _nouveau.text,
+      confirmation: _confirmation.text,
+    );
+    if (!mounted) return;
+    if (erreur != null) {
+      setState(() {
+        _erreur = erreur;
+        _enCours = false;
+      });
+      return;
+    }
+    Navigator.of(context).pop(true);
   }
 }
 

@@ -84,8 +84,11 @@ http://127.0.0.1:5237
 - Menu `Administration baremes` ajoute.
 - Menu `Politique et contact` ajoute: application creee par `_STAN_` pour le 4RE, stockage local et bouton e-mail vers `instructeur.selva@gmail.com`.
 - Acces administration par mot de passe: `Castelnaudary2026+`.
+- Mot de passe administrateur maintenant stocke localement sous forme d empreinte SHA-256.
+- Ecran de changement du mot de passe administrateur ajoute avec validation.
 - Modification locale par domaine/activite des notes, seuils minimum/maximum et bornes incluses/exclues.
 - Sauvegarde locale des baremes modifies avec `shared_preferences`.
+- Sauvegarde locale du hash du mot de passe administrateur avec `shared_preferences`.
 - Bouton de restauration des baremes d'origine.
 
 ### UI / mobile

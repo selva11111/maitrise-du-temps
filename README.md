@@ -37,6 +37,8 @@ Fonctions implementees:
 - confirmation avant changement de domaine/activite pendant le chronometre,
 - meteo Castelnaudary 11400 via Open-Meteo,
 - administration locale des baremes par domaine/activite avec mot de passe,
+- mot de passe administrateur stocke localement sous forme d empreinte SHA-256,
+- ecran dedie pour changer le mot de passe administrateur avec validation,
 - modification des notes, temps minimum/maximum et inclusions de seuils,
 - restauration des baremes d'origine,
 - logo `4re.png`,
@@ -50,11 +52,13 @@ Fonctions implementees:
 - bouton e-mail laisse uniquement dans `Politique et contact`,
 - theme vert/rouge Legion etrangere.
 
-Mot de passe administrateur actuel:
+Mot de passe administrateur initial:
 
 ```text
 Castelnaudary2026+
 ```
+
+Apres le premier changement, l application conserve uniquement l empreinte locale du mot de passe.
 
 ## APK actuel
 

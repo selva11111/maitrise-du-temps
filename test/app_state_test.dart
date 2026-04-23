@@ -36,4 +36,31 @@ void main() {
 
     expect(activiteRechargee.regles.first.note, nouvelleNote);
   });
+
+  test('stocke et recharge localement le mot de passe admin', () async {
+    SharedPreferences.setMockInitialValues({});
+    final state = ChronometrageState();
+    await state.initialiser();
+
+    expect(
+      state.verifierMotDePasseAdmin('Castelnaudary2026+'),
+      isTrue,
+    );
+
+    final erreur = await state.changerMotDePasseAdmin(
+      motDePasseActuel: 'Castelnaudary2026+',
+      nouveauMotDePasse: 'ChronoAdmin2026!',
+      confirmation: 'ChronoAdmin2026!',
+    );
+
+    expect(erreur, isNull);
+    expect(state.verifierMotDePasseAdmin('ChronoAdmin2026!'), isTrue);
+    expect(state.verifierMotDePasseAdmin('Castelnaudary2026+'), isFalse);
+
+    final reloaded = ChronometrageState();
+    await reloaded.initialiser();
+
+    expect(reloaded.verifierMotDePasseAdmin('ChronoAdmin2026!'), isTrue);
+    expect(reloaded.verifierMotDePasseAdmin('Castelnaudary2026+'), isFalse);
+  });
 }
