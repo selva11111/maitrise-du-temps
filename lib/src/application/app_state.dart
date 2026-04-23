@@ -14,7 +14,7 @@ import '../domain/models.dart';
 class ChronometrageState extends ChangeNotifier {
   static const _cleSession = 'chronometrage_arrivee_session_v1';
   static const _cleBaremes = 'maitrise_du_temps_baremes_v1';
-  static const motDePasseAdminParDefaut = 'admin123';
+  static const motDePasseAdminParDefaut = 'Castelnaudary2026+';
 
   final _stopwatch = Stopwatch();
   Timer? _timer;

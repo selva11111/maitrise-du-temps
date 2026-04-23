@@ -68,7 +68,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Mot de passe administrateur'), findsOneWidget);
-    await tester.enterText(find.byType(TextField).last, 'admin123');
+    await tester.enterText(find.byType(TextField).last, 'Castelnaudary2026+');
     await tester.tap(find.widgetWithText(FilledButton, 'Ouvrir'));
     await tester.pumpAndSettle();
 
@@ -104,7 +104,7 @@ void main() {
     await tester.tap(find.text('Administration barèmes'));
     await tester.pump(const Duration(milliseconds: 120));
     await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField).last, 'admin123');
+    await tester.enterText(find.byType(TextField).last, 'Castelnaudary2026+');
     await tester.tap(find.widgetWithText(FilledButton, 'Ouvrir'));
     await tester.pumpAndSettle();
 

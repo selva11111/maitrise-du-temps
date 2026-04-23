@@ -83,7 +83,7 @@ http://127.0.0.1:5237
 - Logo interne et icone launcher Android remplaces par `maitrise_du_temps1.png`.
 - Menu `Administration baremes` ajoute.
 - Menu `Politique et contact` ajoute: application creee par `_STAN_` pour le 4RE, stockage local et bouton e-mail vers `instructeur.selva@gmail.com`.
-- Acces administration par mot de passe: `admin123`.
+- Acces administration par mot de passe: `Castelnaudary2026+`.
 - Modification locale par domaine/activite des notes, seuils minimum/maximum et bornes incluses/exclues.
 - Sauvegarde locale des baremes modifies avec `shared_preferences`.
 - Bouton de restauration des baremes d'origine.
@@ -153,7 +153,7 @@ url_launcher: ^6.3.2
 7. Importer un XLSX de participants.
 8. Exporter les resultats XLSX depuis Android.
 9. Tester la meteo avec internet actif.
-10. Ouvrir Administration baremes avec `admin123`, modifier une regle puis verifier le recalcul des notes.
+10. Ouvrir Administration baremes avec `Castelnaudary2026+`, modifier une regle puis verifier le recalcul des notes.
 
 ## Prochaines ameliorations possibles
 

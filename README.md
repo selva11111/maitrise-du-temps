@@ -53,7 +53,7 @@ Fonctions implementees:
 Mot de passe administrateur actuel:
 
 ```text
-admin123
+Castelnaudary2026+
 ```
 
 ## APK actuel
