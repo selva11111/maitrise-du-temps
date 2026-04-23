@@ -129,4 +129,31 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump();
   });
+
+  testWidgets('corrige un resultat par le crayon sans erreur', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final state = ChronometrageState();
+    addTearDown(state.dispose);
+    await state.initialiser();
+    final participant = state.participantsFiltres.first;
+    state.modifierTemps(participant, const Duration(seconds: 10));
+
+    await tester.pumpWidget(ChronometrageApp(state: state));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Corriger le temps').first);
+    await tester.pumpAndSettle();
+    expect(find.text('Corriger ${participant.nomComplet}'), findsOneWidget);
+
+    final champs = find.byType(TextField);
+    await tester.enterText(champs.last, '00:00:12.345');
+    await tester.tap(find.widgetWithText(FilledButton, 'Valider').last);
+    await tester.pump(const Duration(milliseconds: 800));
+
+    expect(state.resultats[participant.id]?.temps,
+        const Duration(seconds: 12, milliseconds: 345));
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+  });
 }

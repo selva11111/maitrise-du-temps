@@ -43,6 +43,7 @@ Fonctions implementees:
 - icone Android generee z obrazu `maitrise_du_temps1.png`,
 - menu `Politique et contact` avec mention de creation par `_STAN_` pour le 4RE,
 - bouton e-mail vers `instructeur.selva@gmail.com`,
+- refonte des dialogues critiques pour eviter les erreurs Flutter `_dependents.isEmpty`,
 - theme vert/rouge Legion etrangere.
 
 Mot de passe administrateur actuel:
@@ -59,7 +60,7 @@ APK debug genere:
 C:\Users\cyberselva\Desktop\chrono_app\build\app\outputs\flutter-apk\app-debug.apk
 ```
 
-Derniere generation connue: 22/04/2026 22:50:15.
+Derniere generation connue: 23/04/2026 11:11:09.
 
 Ce fichier est une version debug pour tests Android. Le telephone peut demander d'autoriser l'installation depuis une source inconnue.
 

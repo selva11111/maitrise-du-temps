@@ -1,6 +1,6 @@
 # Notes de reprise - Maitrise du Temps
 
-Date de derniere session: 22/04/2026.
+Date de derniere session: 23/04/2026.
 
 ## But du projet
 
@@ -46,7 +46,7 @@ Dernier APK genere:
 C:\Users\cyberselva\Desktop\chrono_app\build\app\outputs\flutter-apk\app-debug.apk
 ```
 
-Derniere heure connue du fichier APK: 22/04/2026 22:50:15.
+Derniere heure connue du fichier APK: 23/04/2026 11:11:09.
 
 Serveur web lance sur:
 
@@ -99,7 +99,10 @@ http://127.0.0.1:5237
   - stoper,
   - liste des participants.
 - Cartes participants plus compactes sur telephone pour afficher plus de noms.
-- Correction du crash Flutter lors de l'ouverture de l'administration baremes et du dialogue d'ajout participant: fermeture du menu avant ouverture du dialogue et destruction differee des controleurs texte.
+- Refonte des dialogues Flutter critiques avec etat local dedie pour eviter l'erreur `_dependents.isEmpty`:
+  - ajout participant,
+  - mot de passe administration,
+  - correction d'un resultat.
 - Participants tries alphabetiquement par nom.
 - Filtre par nom, prenom, numero, groupe.
 - Nom agrandi et visible sur telephone.
@@ -132,6 +135,7 @@ file_picker: ^11.0.2
 file_saver: ^0.3.1
 http: ^1.6.0
 shared_preferences: ^2.5.5
+url_launcher: ^6.3.2
 ```
 
 ## Points a tester demain sur telephone

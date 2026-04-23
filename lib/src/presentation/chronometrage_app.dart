@@ -124,7 +124,7 @@ class _AccueilChronometrage extends StatelessWidget {
           actions: [
             IconButton(
               tooltip: 'Ajouter un participant',
-              onPressed: () => _ouvrirAjoutParticipant(context),
+              onPressed: () => _ouvrirAjoutParticipantSecurise(context),
               icon: const Icon(Icons.person_add_alt_1),
             ),
             PopupMenuButton<String>(
@@ -137,7 +137,7 @@ class _AccueilChronometrage extends StatelessWidget {
                 if (action == 'xlsx-export') _exporterXlsx(context);
                 if (action == 'weather') _ouvrirMeteo(context);
                 if (action == 'admin-baremes') {
-                  _ouvrirAdministrationBaremes(context);
+                  _ouvrirAdministrationBaremesSecurise(context);
                 }
                 if (action == 'about') _ouvrirAPropos(context);
                 if (action == 'clear-participants') {
@@ -346,6 +346,7 @@ class _AccueilChronometrage extends StatelessWidget {
     }
   }
 
+  // ignore: unused_element
   Future<void> _ouvrirAjoutParticipant(BuildContext context) async {
     final prenom = TextEditingController();
     final nom = TextEditingController();
@@ -538,6 +539,7 @@ class _AccueilChronometrage extends StatelessWidget {
     );
   }
 
+  // ignore: unused_element
   Future<void> _ouvrirAdministrationBaremes(BuildContext context) async {
     final motDePasse = TextEditingController();
     final autorise = await showDialog<bool>(
@@ -659,6 +661,210 @@ class _AccueilChronometrage extends StatelessWidget {
       const SnackBar(
         content: Text('Adresse e-mail copiée: instructeur.selva@gmail.com'),
       ),
+    );
+  }
+
+  Future<void> _ouvrirAjoutParticipantSecurise(BuildContext context) async {
+    final donnees = await showDialog<
+        ({
+          String prenom,
+          String nom,
+          String numero,
+          String groupe,
+          String categorie
+        })>(
+      context: context,
+      builder: (_) => const _DialogueAjoutParticipant(),
+    );
+    if (donnees == null || !context.mounted) return;
+
+    final erreur = state.ajouterParticipant(
+      prenom: donnees.prenom,
+      nom: donnees.nom,
+      numero: donnees.numero,
+      groupe: donnees.groupe,
+      categorie: donnees.categorie,
+    );
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(erreur ?? 'Participant ajouté et session sauvegardée.'),
+      ),
+    );
+  }
+
+  Future<void> _ouvrirAdministrationBaremesSecurise(
+      BuildContext context) async {
+    final autorise = await showDialog<bool>(
+      context: context,
+      builder: (_) => _DialogueMotDePasseAdmin(state: state),
+    );
+    if (!context.mounted || autorise == null) return;
+    if (!autorise) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Mot de passe incorrect.')),
+      );
+      return;
+    }
+
+    await showDialog<void>(
+      context: context,
+      builder: (_) => _DialogueAdministrationBaremes(state: state),
+    );
+  }
+}
+
+class _DialogueAjoutParticipant extends StatefulWidget {
+  const _DialogueAjoutParticipant();
+
+  @override
+  State<_DialogueAjoutParticipant> createState() =>
+      _DialogueAjoutParticipantState();
+}
+
+class _DialogueAjoutParticipantState extends State<_DialogueAjoutParticipant> {
+  final _prenom = TextEditingController();
+  final _nom = TextEditingController();
+  final _numero = TextEditingController();
+  final _groupe = TextEditingController();
+  final _categorie = TextEditingController();
+
+  @override
+  void dispose() {
+    _prenom.dispose();
+    _nom.dispose();
+    _numero.dispose();
+    _groupe.dispose();
+    _categorie.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Ajouter un participant'),
+      content: SizedBox(
+        width: 420,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: _prenom,
+              textInputAction: TextInputAction.next,
+              decoration: const InputDecoration(
+                labelText: 'Prénom',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _nom,
+              textInputAction: TextInputAction.next,
+              decoration: const InputDecoration(
+                labelText: 'Nom',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _numero,
+              textInputAction: TextInputAction.next,
+              decoration: const InputDecoration(
+                labelText: 'Numéro',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _groupe,
+              textInputAction: TextInputAction.next,
+              decoration: const InputDecoration(
+                labelText: 'Groupe',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _categorie,
+              decoration: const InputDecoration(
+                labelText: 'Catégorie',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Annuler'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(context).pop((
+            prenom: _prenom.text,
+            nom: _nom.text,
+            numero: _numero.text,
+            groupe: _groupe.text,
+            categorie: _categorie.text,
+          )),
+          child: const Text('Ajouter'),
+        ),
+      ],
+    );
+  }
+}
+
+class _DialogueMotDePasseAdmin extends StatefulWidget {
+  const _DialogueMotDePasseAdmin({required this.state});
+
+  final ChronometrageState state;
+
+  @override
+  State<_DialogueMotDePasseAdmin> createState() =>
+      _DialogueMotDePasseAdminState();
+}
+
+class _DialogueMotDePasseAdminState extends State<_DialogueMotDePasseAdmin> {
+  final _motDePasse = TextEditingController();
+
+  @override
+  void dispose() {
+    _motDePasse.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Administration barèmes'),
+      content: SizedBox(
+        width: 360,
+        child: TextField(
+          controller: _motDePasse,
+          autofocus: true,
+          obscureText: true,
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(),
+            labelText: 'Mot de passe administrateur',
+          ),
+          onSubmitted: (_) => _valider(),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: const Text('Annuler'),
+        ),
+        FilledButton(
+          onPressed: _valider,
+          child: const Text('Ouvrir'),
+        ),
+      ],
+    );
+  }
+
+  void _valider() {
+    Navigator.of(context).pop(
+      widget.state.verifierMotDePasseAdmin(_motDePasse.text),
     );
   }
 }
@@ -1562,7 +1768,7 @@ class _CarteParticipantMobile extends StatelessWidget {
             IconButton(
               tooltip: 'Corriger le temps',
               visualDensity: VisualDensity.compact,
-              onPressed: () => _ouvrirCorrectionTemps(
+              onPressed: () => _ouvrirCorrectionTempsSecurise(
                 context: context,
                 state: state,
                 participant: participant,
@@ -1636,7 +1842,7 @@ class _CarteParticipantLarge extends StatelessWidget {
             ),
             IconButton(
               tooltip: 'Corriger le temps',
-              onPressed: () => _ouvrirCorrectionTemps(
+              onPressed: () => _ouvrirCorrectionTempsSecurise(
                 context: context,
                 state: state,
                 participant: participant,
@@ -1710,7 +1916,7 @@ class _EcranResultats extends StatelessWidget {
                 IconButton(
                   tooltip: 'Modifier ce résultat',
                   icon: const Icon(Icons.edit),
-                  onPressed: () => _ouvrirCorrectionTemps(
+                  onPressed: () => _ouvrirCorrectionTempsSecurise(
                     context: context,
                     state: state,
                     participant: participant,
@@ -1726,6 +1932,105 @@ class _EcranResultats extends StatelessWidget {
   }
 }
 
+Future<void> _ouvrirCorrectionTempsSecurise({
+  required BuildContext context,
+  required ChronometrageState state,
+  required Participant participant,
+  required ResultatParticipant? resultat,
+}) async {
+  final temps = await showDialog<Duration>(
+    context: context,
+    builder: (_) => _DialogueCorrectionTemps(
+      participant: participant,
+      resultat: resultat,
+    ),
+  );
+  if (temps == null) return;
+  state.modifierTemps(participant, temps);
+}
+
+class _DialogueCorrectionTemps extends StatefulWidget {
+  const _DialogueCorrectionTemps({
+    required this.participant,
+    required this.resultat,
+  });
+
+  final Participant participant;
+  final ResultatParticipant? resultat;
+
+  @override
+  State<_DialogueCorrectionTemps> createState() =>
+      _DialogueCorrectionTempsState();
+}
+
+class _DialogueCorrectionTempsState extends State<_DialogueCorrectionTemps> {
+  late final TextEditingController _controller = TextEditingController(
+    text: widget.resultat?.temps == null
+        ? '00:00:00.000'
+        : formatDuration(widget.resultat!.temps!),
+  );
+  String? _erreur;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Corriger ${widget.participant.nomComplet}'),
+      content: SizedBox(
+        width: 380,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: _controller,
+              autofocus: true,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'Temps au format HH:MM:SS.mmm',
+              ),
+              onSubmitted: (_) => _valider(),
+            ),
+            if (_erreur != null) ...[
+              const SizedBox(height: 10),
+              Text(
+                _erreur!,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+            ],
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Annuler'),
+        ),
+        FilledButton(
+          onPressed: _valider,
+          child: const Text('Valider'),
+        ),
+      ],
+    );
+  }
+
+  void _valider() {
+    final temps = parseTemps(_controller.text);
+    if (temps == null) {
+      setState(() {
+        _erreur = 'Format invalide. Utilisez HH:MM:SS.mmm.';
+      });
+      return;
+    }
+    Navigator.of(context).pop(temps);
+  }
+}
+
+// ignore: unused_element
 Future<void> _ouvrirCorrectionTemps({
   required BuildContext context,
   required ChronometrageState state,
