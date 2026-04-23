@@ -49,4 +49,18 @@ GRIMPER
     expect(parseTemps('02:03.4'),
         const Duration(minutes: 2, seconds: 3, milliseconds: 400));
   });
+
+  test('mappe FS1 vers ST1-00', () {
+    final section = BaremeParser().analyser(
+      chemin: 'FS1-OO.txt',
+      contenu: '''
+BAREMES
+TEST
+20 : t <= 40"
+''',
+    );
+
+    expect(section.id, 'ST1-00');
+    expect(section.nom, 'ST1-00');
+  });
 }

@@ -46,7 +46,7 @@ Dernier APK genere:
 C:\Users\cyberselva\Desktop\chrono_app\build\app\outputs\flutter-apk\app-debug.apk
 ```
 
-Derniere heure connue du fichier APK: 23/04/2026 11:11:09.
+Derniere heure connue du fichier APK: 23/04/2026 11:46:26.
 
 Serveur web lance sur:
 
@@ -103,6 +103,10 @@ http://127.0.0.1:5237
   - ajout participant,
   - mot de passe administration,
   - correction d'un resultat.
+- Dialogue `Modifier une règle` rendu defilable pour eviter le `bottom overflowed by 34 pixels`.
+- Bouton `Rafraîchir les barèmes` ajoute pour recharger explicitement les baremes locaux.
+- Domaine `FS1` simplifie en `ST1-00`.
+- Bouton e-mail laisse uniquement dans `Politique et contact`.
 - Participants tries alphabetiquement par nom.
 - Filtre par nom, prenom, numero, groupe.
 - Nom agrandi et visible sur telephone.
@@ -159,7 +163,7 @@ url_launcher: ^6.3.2
 - Ajouter signature release Android.
 - Ajouter icone launcher Android avec `4re.png`.
 - Remplacer le mot de passe fixe par un vrai ecran de configuration si l'application part en production.
-- Ajouter persistance plus robuste avec fichier local/SQLite si la liste devient grande.
+- Passer a SQLite seulement si les baremes deviennent multi-utilisateur ou si le volume de donnees depasse clairement le stockage local actuel.
 - Ajouter tests widget specifiques mobile.
 
 ## Commandes PowerShell a reutiliser

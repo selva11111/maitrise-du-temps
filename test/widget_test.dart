@@ -110,6 +110,7 @@ void main() {
 
     await tester.tap(find.byTooltip('Modifier la règle').first);
     await tester.pumpAndSettle();
+    expect(find.text('Modifier une règle'), findsOneWidget);
     final champsEdition = find.byType(TextField);
     await tester.enterText(
       champsEdition.at(champsEdition.evaluate().length - 3),
@@ -126,6 +127,28 @@ void main() {
 
     await tester.tap(find.text('Fermer').last);
     await tester.pump(const Duration(milliseconds: 600));
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+  });
+
+  testWidgets('le contact e-mail est disponible dans politique et contact',
+      (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final state = ChronometrageState();
+    addTearDown(state.dispose);
+    await state.initialiser();
+
+    await tester.pumpWidget(ChronometrageApp(state: state));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Fichiers et participants'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Politique et contact'));
+    await tester.pumpAndSettle();
+    expect(find.text('Envoyer un message'), findsOneWidget);
+    await tester.tap(find.text('Fermer').last);
+    await tester.pumpAndSettle();
+
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump();
   });

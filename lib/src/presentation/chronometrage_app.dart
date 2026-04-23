@@ -277,11 +277,6 @@ class _AccueilChronometrage extends StatelessWidget {
             ),
           ),
           actions: [
-            TextButton.icon(
-              onPressed: () => _envoyerMessageContact(context),
-              icon: const Icon(Icons.mail_outline),
-              label: const Text('Envoyer un message'),
-            ),
             FilledButton(
               onPressed: () => Navigator.pop(context),
               child: const Text('Fermer'),
@@ -602,36 +597,43 @@ class _AccueilChronometrage extends StatelessWidget {
       builder: (context) {
         return AlertDialog(
           title: const Text('Politique et contact'),
-          content: const SizedBox(
-            width: 380,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(child: _LogoApp(taille: 108)),
-                SizedBox(height: 16),
-                Text(
-                  'Maîtrise du Temps',
-                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
-                ),
-                SizedBox(height: 8),
-                Text('Application créée par _STAN_ pour le 4RE.'),
-                SizedBox(height: 8),
-                Text(
-                  'Les participants, temps, résultats et barèmes modifiés sont conservés localement sur cet appareil.',
-                ),
-                SizedBox(height: 8),
-                Text(
-                  'Aucune liste de participants n’est envoyée par l’application. La météo utilise uniquement le service Open-Meteo pour Castelnaudary.',
-                ),
-                SizedBox(height: 8),
-                Text(
-                  'En cas de problème, de question ou de besoin d’assistance, veuillez me contacter.',
-                ),
-              ],
+          content: const SingleChildScrollView(
+            child: SizedBox(
+              width: 380,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(child: _LogoApp(taille: 108)),
+                  SizedBox(height: 16),
+                  Text(
+                    'Maîtrise du Temps',
+                    style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
+                  ),
+                  SizedBox(height: 8),
+                  Text('Application créée par _STAN_ pour le 4RE.'),
+                  SizedBox(height: 8),
+                  Text(
+                    'Les participants, temps, résultats et barèmes modifiés sont conservés localement sur cet appareil.',
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Aucune liste de participants n’est envoyée par l’application. La météo utilise uniquement le service Open-Meteo pour Castelnaudary.',
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'En cas de problème, de question ou de besoin d’assistance, veuillez me contacter.',
+                  ),
+                ],
+              ),
             ),
           ),
           actions: [
+            TextButton.icon(
+              onPressed: () => _envoyerMessageContact(context),
+              icon: const Icon(Icons.mail_outline),
+              label: const Text('Envoyer un message'),
+            ),
             FilledButton(
               onPressed: () => Navigator.pop(context),
               child: const Text('Fermer'),
@@ -1163,6 +1165,11 @@ class _DialogueAdministrationBaremesState
                   ),
                 ),
                 OutlinedButton.icon(
+                  onPressed: _rafraichirBaremes,
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Rafraîchir les barèmes'),
+                ),
+                OutlinedButton.icon(
                   onPressed: _restaurerBaremes,
                   icon: const Icon(Icons.restore),
                   label: const Text('Restaurer les barèmes'),
@@ -1276,6 +1283,21 @@ class _DialogueAdministrationBaremesState
       const SnackBar(content: Text('Barèmes restaurés.')),
     );
   }
+
+  Future<void> _rafraichirBaremes() async {
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    await widget.state.rechargerBaremesEnregistres();
+    if (!mounted) return;
+    setState(() {
+      _sectionId = widget.state.sectionCourante?.id;
+      _activiteId = widget.state.activiteCourante?.id;
+    });
+    messenger?.showSnackBar(
+      const SnackBar(
+        content: Text('Barèmes rechargés depuis le stockage local.'),
+      ),
+    );
+  }
 }
 
 class _DialogueEditionRegleBareme extends StatefulWidget {
@@ -1321,77 +1343,88 @@ class _DialogueEditionRegleBaremeState
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      scrollable: true,
       title: const Text('Modifier une règle'),
-      content: SizedBox(
-        width: 420,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: _note,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'Note',
+      content: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 420),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: _note,
+                keyboardType: TextInputType.number,
+                textInputAction: TextInputAction.next,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: 'Note',
+                ),
               ),
-            ),
-            const SizedBox(height: 10),
-            DropdownButtonFormField<TypeMesure>(
-              initialValue: _type,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'Type de mesure',
+              const SizedBox(height: 10),
+              DropdownButtonFormField<TypeMesure>(
+                initialValue: _type,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: 'Type de mesure',
+                ),
+                items: TypeMesure.values
+                    .where((type) => type != TypeMesure.inconnue)
+                    .map((type) => DropdownMenuItem(
+                          value: type,
+                          child: Text(_libelleTypeMesure(type)),
+                        ))
+                    .toList(),
+                onChanged: (value) {
+                  if (value != null) setState(() => _type = value);
+                },
               ),
-              items: TypeMesure.values
-                  .where((type) => type != TypeMesure.inconnue)
-                  .map((type) => DropdownMenuItem(
-                        value: type,
-                        child: Text(_libelleTypeMesure(type)),
-                      ))
-                  .toList(),
-              onChanged: (value) {
-                if (value != null) setState(() => _type = value);
-              },
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: _minimum,
-              decoration: InputDecoration(
-                border: const OutlineInputBorder(),
-                labelText: 'Minimum',
-                hintText: _type == TypeMesure.temps ? 'HH:MM:SS.mmm' : '0',
+              const SizedBox(height: 10),
+              TextField(
+                controller: _minimum,
+                textInputAction: TextInputAction.next,
+                decoration: InputDecoration(
+                  border: const OutlineInputBorder(),
+                  labelText: 'Minimum',
+                  hintText: _type == TypeMesure.temps ? 'HH:MM:SS.mmm' : '0',
+                ),
               ),
-            ),
-            CheckboxListTile(
-              contentPadding: EdgeInsets.zero,
-              title: const Text('Minimum inclus'),
-              value: _minimumInclus,
-              onChanged: (value) {
-                setState(() => _minimumInclus = value ?? false);
-              },
-            ),
-            TextField(
-              controller: _maximum,
-              decoration: InputDecoration(
-                border: const OutlineInputBorder(),
-                labelText: 'Maximum',
-                hintText: _type == TypeMesure.temps ? 'HH:MM:SS.mmm' : '0',
+              CheckboxListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Minimum inclus'),
+                value: _minimumInclus,
+                onChanged: (value) {
+                  setState(() => _minimumInclus = value ?? false);
+                },
               ),
-            ),
-            CheckboxListTile(
-              contentPadding: EdgeInsets.zero,
-              title: const Text('Maximum inclus'),
-              value: _maximumInclus,
-              onChanged: (value) {
-                setState(() => _maximumInclus = value ?? false);
-              },
-            ),
-            if (_erreur != null)
-              Text(
-                _erreur!,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              TextField(
+                controller: _maximum,
+                textInputAction: TextInputAction.done,
+                onSubmitted: (_) => _valider(),
+                decoration: InputDecoration(
+                  border: const OutlineInputBorder(),
+                  labelText: 'Maximum',
+                  hintText: _type == TypeMesure.temps ? 'HH:MM:SS.mmm' : '0',
+                ),
               ),
-          ],
+              CheckboxListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Maximum inclus'),
+                value: _maximumInclus,
+                onChanged: (value) {
+                  setState(() => _maximumInclus = value ?? false);
+                },
+              ),
+              if (_erreur != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(
+                    _erreur!,
+                    style:
+                        TextStyle(color: Theme.of(context).colorScheme.error),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
       actions: [

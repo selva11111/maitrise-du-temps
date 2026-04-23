@@ -87,7 +87,7 @@ class BaremeParser {
     final fichier = chemin.split(RegExp(r'[\\/]')).last.toUpperCase();
     if (fichier.startsWith('FG1')) return ('FG1', 'FG1');
     if (fichier.startsWith('FGE')) return ('FGE', 'FGE');
-    if (fichier.startsWith('FS1')) return ('ST1-00-AGUER', 'ST1-00-AGUER');
+    if (fichier.startsWith('FS1')) return ('ST1-00', 'ST1-00');
     if (fichier.startsWith('FTS')) return ('FGI', 'FGI');
     return (fichier.replaceAll('.TXT', ''), fichier.replaceAll('.TXT', ''));
   }

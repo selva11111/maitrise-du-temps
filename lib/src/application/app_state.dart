@@ -216,6 +216,28 @@ class ChronometrageState extends ChangeNotifier {
     _notifierEtSauvegarder();
   }
 
+  Future<void> rechargerBaremesEnregistres() async {
+    sections = List.unmodifiable(_sectionsParDefaut);
+    await _chargerBaremesModifies();
+    final sectionExiste =
+        sections.any((section) => section.id == sectionSelectionnee);
+    if (!sectionExiste) {
+      sectionSelectionnee = sections.isEmpty ? null : sections.first.id;
+    }
+    final section = sectionCourante;
+    final activiteExiste = section?.activites
+            .any((activite) => activite.id == activiteSelectionnee) ??
+        false;
+    if (!activiteExiste) {
+      activiteSelectionnee = section?.activites.isEmpty == true
+          ? null
+          : section?.activites.first.id;
+    }
+    _recalculerNotes();
+    _journaliser('Baremes recharges depuis le stockage local.');
+    notifyListeners();
+  }
+
   void definirRecherche(String valeur) {
     recherche = valeur;
     notifyListeners();
