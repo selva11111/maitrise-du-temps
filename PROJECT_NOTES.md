@@ -54,6 +54,18 @@ Serveur web lance sur:
 http://127.0.0.1:5237
 ```
 
+Demarrage web recommande:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File C:\Users\cyberselva\Desktop\chrono_app\scripts\start-web.ps1
+```
+
+Le script prend `5237` si disponible, sinon il monte sur le prochain port libre et ecrit le port actif dans:
+
+```text
+C:\Users\cyberselva\Desktop\chrono_app\.runtime\web-server.port
+```
+
 ## Ce qui a ete ajoute aujourd'hui
 
 ### Base projet
@@ -200,4 +212,10 @@ APK:
 
 ```powershell
 flutter build apk --debug
+```
+
+Ou:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File C:\Users\cyberselva\Desktop\chrono_app\scripts\build-apk.ps1
 ```

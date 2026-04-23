@@ -88,6 +88,24 @@ C:\Users\cyberselva\Desktop\chrono_app\flutter-web-current.out.log
 C:\Users\cyberselva\Desktop\chrono_app\flutter-web-current.err.log
 ```
 
+Demarrage recommande:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File C:\Users\cyberselva\Desktop\chrono_app\scripts\start-web.ps1
+```
+
+Le script tente `5237` puis choisit automatiquement le prochain port libre. Le port courant est ecrit ici:
+
+```text
+C:\Users\cyberselva\Desktop\chrono_app\.runtime\web-server.port
+```
+
+Arret du serveur web:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File C:\Users\cyberselva\Desktop\chrono_app\scripts\stop-web.ps1
+```
+
 ## Environnement installe
 
 Flutter:
@@ -153,6 +171,12 @@ Construire APK debug:
 
 ```powershell
 flutter build apk --debug
+```
+
+Ou via le script:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File C:\Users\cyberselva\Desktop\chrono_app\scripts\build-apk.ps1
 ```
 
 ## Structure principale
