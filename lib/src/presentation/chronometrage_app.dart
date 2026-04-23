@@ -708,9 +708,446 @@ class _AccueilChronometrage extends StatelessWidget {
       return;
     }
 
-    await showDialog<void>(
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => _EcranAdministrationBaremes(state: state),
+      ),
+    );
+  }
+}
+
+class _EcranAdministrationBaremes extends StatefulWidget {
+  const _EcranAdministrationBaremes({required this.state});
+
+  final ChronometrageState state;
+
+  @override
+  State<_EcranAdministrationBaremes> createState() =>
+      _EcranAdministrationBaremesState();
+}
+
+class _EcranAdministrationBaremesState
+    extends State<_EcranAdministrationBaremes> {
+  late String? _sectionId =
+      widget.state.sectionCourante?.id ?? _premiereSection()?.id;
+  late String? _activiteId = _premiereActivite(_sectionSelectionnee)?.id;
+
+  BaremeSection? _premiereSection() {
+    return widget.state.sections.isEmpty ? null : widget.state.sections.first;
+  }
+
+  BaremeActivite? _premiereActivite(BaremeSection? section) {
+    if (section == null || section.activites.isEmpty) return null;
+    return section.activites.first;
+  }
+
+  BaremeSection? get _sectionSelectionnee {
+    for (final section in widget.state.sections) {
+      if (section.id == _sectionId) return section;
+    }
+    return _premiereSection();
+  }
+
+  BaremeActivite? get _activiteSelectionnee {
+    final section = _sectionSelectionnee;
+    if (section == null) return null;
+    for (final activite in section.activites) {
+      if (activite.id == _activiteId) return activite;
+    }
+    return _premiereActivite(section);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final section = _sectionSelectionnee;
+    final activite = _activiteSelectionnee;
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Administration barèmes'),
+        actions: [
+          IconButton(
+            tooltip: 'Rafraîchir les barèmes',
+            onPressed: _rafraichirBaremes,
+            icon: const Icon(Icons.refresh),
+          ),
+          IconButton(
+            tooltip: 'Restaurer les barèmes',
+            onPressed: _restaurerBaremes,
+            icon: const Icon(Icons.restore),
+          ),
+        ],
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: [
+                  SizedBox(
+                    width: 260,
+                    child: DropdownButtonFormField<String>(
+                      initialValue: _sectionId,
+                      isExpanded: true,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: 'Domaine',
+                      ),
+                      items: widget.state.sections
+                          .map((item) => DropdownMenuItem(
+                                value: item.id,
+                                child: Text(
+                                  item.nom,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ))
+                          .toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _sectionId = value;
+                          _activiteId =
+                              _premiereActivite(_sectionSelectionnee)?.id;
+                        });
+                      },
+                    ),
+                  ),
+                  SizedBox(
+                    width: 360,
+                    child: DropdownButtonFormField<String>(
+                      initialValue: activite?.id,
+                      isExpanded: true,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: 'Activité',
+                      ),
+                      items: (section?.activites ?? [])
+                          .map((item) => DropdownMenuItem(
+                                value: item.id,
+                                child: Text(
+                                  item.nom,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ))
+                          .toList(),
+                      onChanged: (value) => setState(() => _activiteId = value),
+                    ),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: _rafraichirBaremes,
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Rafraîchir les barèmes'),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: _restaurerBaremes,
+                    icon: const Icon(Icons.restore),
+                    label: const Text('Restaurer les barèmes'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Les modifications sont sauvegardées localement et recalculent immédiatement les notes déjà saisies.',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(height: 12),
+              Expanded(
+                child: activite == null
+                    ? const Center(child: Text('Aucune activité disponible.'))
+                    : ListView.separated(
+                        itemCount: activite.regles.length,
+                        separatorBuilder: (_, __) => const Divider(height: 1),
+                        itemBuilder: (context, index) {
+                          final regle = activite.regles[index];
+                          return ListTile(
+                            dense: true,
+                            leading: CircleAvatar(
+                              child: Text(regle.note.toString()),
+                            ),
+                            title: Text(
+                              '${_libelleTypeMesure(regle.type)}  ${_formatValeurBareme(regle, regle.minimum)} - ${_formatValeurBareme(regle, regle.maximum)}',
+                            ),
+                            subtitle: Text(
+                              'Min ${regle.minimumInclus ? 'inclus' : 'exclu'} - Max ${regle.maximumInclus ? 'inclus' : 'exclu'}',
+                            ),
+                            trailing: IconButton(
+                              tooltip: 'Modifier la règle',
+                              icon: const Icon(Icons.edit),
+                              onPressed: () => _modifierRegle(index, regle),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _modifierRegle(int index, RegleBareme regle) async {
+    final activite = _activiteSelectionnee;
+    final section = _sectionSelectionnee;
+    if (activite == null || section == null) return;
+    final regleModifiee = await Navigator.of(context).push<RegleBareme>(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => _EcranEditionRegleBareme(
+          regle: regle,
+          typeParDefaut: activite.typePrincipal,
+        ),
+      ),
+    );
+    if (regleModifiee == null || !mounted) return;
+
+    await widget.state.mettreAJourRegleBareme(
+      sectionId: section.id,
+      activiteId: activite.id,
+      regleIndex: index,
+      regle: regleModifiee,
+    );
+    if (!mounted) return;
+    setState(() {});
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Barème modifié et sauvegardé.')),
+    );
+  }
+
+  Future<void> _restaurerBaremes() async {
+    final confirmer = await showDialog<bool>(
       context: context,
-      builder: (_) => _DialogueAdministrationBaremes(state: state),
+      builder: (context) => AlertDialog(
+        title: const Text('Restaurer les barèmes'),
+        content: const Text(
+          'Toutes les modifications locales des barèmes seront supprimées.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Annuler'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Restaurer'),
+          ),
+        ],
+      ),
+    );
+    if (confirmer != true) return;
+    await widget.state.reinitialiserBaremes();
+    if (!mounted) return;
+    setState(() {
+      _sectionId = widget.state.sectionCourante?.id;
+      _activiteId = widget.state.activiteCourante?.id;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Barèmes restaurés.')),
+    );
+  }
+
+  Future<void> _rafraichirBaremes() async {
+    await widget.state.rechargerBaremesEnregistres();
+    if (!mounted) return;
+    setState(() {
+      _sectionId = widget.state.sectionCourante?.id;
+      _activiteId = widget.state.activiteCourante?.id;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Barèmes rechargés depuis le stockage local.'),
+      ),
+    );
+  }
+}
+
+class _EcranEditionRegleBareme extends StatefulWidget {
+  const _EcranEditionRegleBareme({
+    required this.regle,
+    required this.typeParDefaut,
+  });
+
+  final RegleBareme regle;
+  final TypeMesure typeParDefaut;
+
+  @override
+  State<_EcranEditionRegleBareme> createState() =>
+      _EcranEditionRegleBaremeState();
+}
+
+class _EcranEditionRegleBaremeState extends State<_EcranEditionRegleBareme> {
+  late final TextEditingController _note = TextEditingController(
+    text: widget.regle.note.toString(),
+  );
+  late final TextEditingController _minimum = TextEditingController(
+    text: _formatValeurBareme(widget.regle, widget.regle.minimum),
+  );
+  late final TextEditingController _maximum = TextEditingController(
+    text: _formatValeurBareme(widget.regle, widget.regle.maximum),
+  );
+  late TypeMesure _type = widget.regle.type == TypeMesure.inconnue
+      ? widget.typeParDefaut
+      : widget.regle.type;
+  late bool _minimumInclus = widget.regle.minimumInclus;
+  late bool _maximumInclus = widget.regle.maximumInclus;
+  String? _erreur;
+
+  @override
+  void dispose() {
+    _note.dispose();
+    _minimum.dispose();
+    _maximum.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Modifier une règle')),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 520),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  TextField(
+                    controller: _note,
+                    keyboardType: TextInputType.number,
+                    textInputAction: TextInputAction.next,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'Note',
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<TypeMesure>(
+                    initialValue: _type,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'Type de mesure',
+                    ),
+                    items: TypeMesure.values
+                        .where((type) => type != TypeMesure.inconnue)
+                        .map((type) => DropdownMenuItem(
+                              value: type,
+                              child: Text(_libelleTypeMesure(type)),
+                            ))
+                        .toList(),
+                    onChanged: (value) {
+                      if (value != null) setState(() => _type = value);
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _minimum,
+                    textInputAction: TextInputAction.next,
+                    decoration: InputDecoration(
+                      border: const OutlineInputBorder(),
+                      labelText: 'Minimum',
+                      hintText:
+                          _type == TypeMesure.temps ? 'HH:MM:SS.mmm' : '0',
+                    ),
+                  ),
+                  CheckboxListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Minimum inclus'),
+                    value: _minimumInclus,
+                    onChanged: (value) {
+                      setState(() => _minimumInclus = value ?? false);
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _maximum,
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) => _valider(),
+                    decoration: InputDecoration(
+                      border: const OutlineInputBorder(),
+                      labelText: 'Maximum',
+                      hintText:
+                          _type == TypeMesure.temps ? 'HH:MM:SS.mmm' : '0',
+                    ),
+                  ),
+                  CheckboxListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Maximum inclus'),
+                    value: _maximumInclus,
+                    onChanged: (value) {
+                      setState(() => _maximumInclus = value ?? false);
+                    },
+                  ),
+                  if (_erreur != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      _erreur!,
+                      style:
+                          TextStyle(color: Theme.of(context).colorScheme.error),
+                    ),
+                  ],
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Annuler'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: FilledButton(
+                          onPressed: _valider,
+                          child: const Text('Sauvegarder'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _valider() {
+    final note = int.tryParse(_note.text.trim());
+    final minimum = _parseValeurBareme(_type, _minimum.text);
+    final maximum = _parseValeurBareme(_type, _maximum.text);
+    if (note == null || note < 0 || note > 20) {
+      setState(() => _erreur = 'La note doit être comprise entre 0 et 20.');
+      return;
+    }
+    if (_minimum.text.trim().isNotEmpty && minimum == null) {
+      setState(() => _erreur = 'Minimum invalide.');
+      return;
+    }
+    if (_maximum.text.trim().isNotEmpty && maximum == null) {
+      setState(() => _erreur = 'Maximum invalide.');
+      return;
+    }
+    if (minimum != null && maximum != null && minimum > maximum) {
+      setState(() => _erreur = 'Le minimum ne peut pas dépasser le maximum.');
+      return;
+    }
+
+    Navigator.pop(
+      context,
+      widget.regle.copie(
+        note: note,
+        type: _type,
+        minimum: minimum,
+        maximum: maximum,
+        minimumInclus: _minimumInclus,
+        maximumInclus: _maximumInclus,
+      ),
     );
   }
 }

@@ -70,11 +70,11 @@ void main() {
     expect(find.text('Mot de passe administrateur'), findsOneWidget);
     await tester.enterText(find.byType(TextField).last, 'admin123');
     await tester.tap(find.widgetWithText(FilledButton, 'Ouvrir'));
-    await tester.pump(const Duration(milliseconds: 600));
+    await tester.pumpAndSettle();
 
     expect(find.text('Domaine'), findsOneWidget);
-    await tester.tap(find.text('Fermer').last);
-    await tester.pump(const Duration(milliseconds: 600));
+    Navigator.of(tester.element(find.text('Domaine'))).pop();
+    await tester.pumpAndSettle();
 
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump();
@@ -106,7 +106,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField).last, 'admin123');
     await tester.tap(find.widgetWithText(FilledButton, 'Ouvrir'));
-    await tester.pump(const Duration(milliseconds: 600));
+    await tester.pumpAndSettle();
 
     await tester.tap(find.byTooltip('Modifier la règle').first);
     await tester.pumpAndSettle();
@@ -125,8 +125,8 @@ void main() {
         .firstWhere((candidate) => candidate.id == activite.id);
     expect(activiteModifiee.regles.first.note, nouvelleNote);
 
-    await tester.tap(find.text('Fermer').last);
-    await tester.pump(const Duration(milliseconds: 600));
+    Navigator.of(tester.element(find.text('Domaine'))).pop();
+    await tester.pumpAndSettle();
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump();
   });
