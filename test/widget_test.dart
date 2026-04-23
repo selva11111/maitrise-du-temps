@@ -51,7 +51,7 @@ void main() {
     await tester.pump();
   });
 
-  testWidgets('ouvre administration baremes depuis le menu sans erreur',
+  testWidgets('ouvre paramètres administrateur puis administration baremes',
       (tester) async {
     SharedPreferences.setMockInitialValues({});
     final state = ChronometrageState();
@@ -63,13 +63,17 @@ void main() {
 
     await tester.tap(find.byTooltip('Fichiers et participants'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Administration barèmes'));
+    await tester.tap(find.text('Paramètres administrateur'));
     await tester.pump(const Duration(milliseconds: 120));
     await tester.pumpAndSettle();
 
     expect(find.text('Mot de passe administrateur'), findsOneWidget);
     await tester.enterText(find.byType(TextField).last, 'Castelnaudary2026+');
     await tester.tap(find.widgetWithText(FilledButton, 'Ouvrir'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Paramètres administrateur'), findsOneWidget);
+    await tester.tap(find.text('Administration barèmes'));
     await tester.pumpAndSettle();
 
     expect(find.text('Domaine'), findsOneWidget);
@@ -101,11 +105,14 @@ void main() {
 
     await tester.tap(find.byTooltip('Fichiers et participants'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Administration barèmes'));
+    await tester.tap(find.text('Paramètres administrateur'));
     await tester.pump(const Duration(milliseconds: 120));
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField).last, 'Castelnaudary2026+');
     await tester.tap(find.widgetWithText(FilledButton, 'Ouvrir'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Administration barèmes'));
     await tester.pumpAndSettle();
 
     await tester.tap(find.byTooltip('Modifier la règle').first);
@@ -148,6 +155,32 @@ void main() {
     expect(find.text('Envoyer un message'), findsOneWidget);
     await tester.tap(find.text('Fermer').last);
     await tester.pumpAndSettle();
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+  });
+
+  testWidgets('ouvre ecran changement mot de passe admin', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final state = ChronometrageState();
+    addTearDown(state.dispose);
+    await state.initialiser();
+
+    await tester.pumpWidget(ChronometrageApp(state: state));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Fichiers et participants'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Paramètres administrateur'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).last, 'Castelnaudary2026+');
+    await tester.tap(find.widgetWithText(FilledButton, 'Ouvrir'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Changer le mot de passe admin'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Changer mot de passe admin'), findsOneWidget);
 
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump();

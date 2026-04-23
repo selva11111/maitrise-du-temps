@@ -37,6 +37,7 @@ Fonctions implementees:
 - confirmation avant changement de domaine/activite pendant le chronometre,
 - meteo Castelnaudary 11400 via Open-Meteo,
 - administration locale des baremes par domaine/activite avec mot de passe,
+- ecran `Paramètres administrateur` separe de l edition des baremes,
 - mot de passe administrateur stocke localement sous forme d empreinte SHA-256,
 - ecran dedie pour changer le mot de passe administrateur avec validation,
 - modification des notes, temps minimum/maximum et inclusions de seuils,
@@ -68,7 +69,7 @@ APK debug genere:
 C:\Users\cyberselva\Desktop\chrono_app\build\app\outputs\flutter-apk\app-debug.apk
 ```
 
-Derniere generation connue: 23/04/2026 11:46:26.
+Derniere generation connue: 23/04/2026 12:24:25.
 
 Ce fichier est une version debug pour tests Android. Le telephone peut demander d'autoriser l'installation depuis une source inconnue.
 

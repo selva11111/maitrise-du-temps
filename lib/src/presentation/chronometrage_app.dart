@@ -136,8 +136,8 @@ class _AccueilChronometrage extends StatelessWidget {
                 if (action == 'xlsx-import') _importerXlsx(context);
                 if (action == 'xlsx-export') _exporterXlsx(context);
                 if (action == 'weather') _ouvrirMeteo(context);
-                if (action == 'admin-baremes') {
-                  _ouvrirAdministrationBaremesSecurise(context);
+                if (action == 'admin-settings') {
+                  _ouvrirParametresAdminSecurises(context);
                 }
                 if (action == 'about') _ouvrirAPropos(context);
                 if (action == 'clear-participants') {
@@ -164,8 +164,8 @@ class _AccueilChronometrage extends StatelessWidget {
                   child: Text('Météo Castelnaudary'),
                 ),
                 PopupMenuItem(
-                  value: 'admin-baremes',
-                  child: Text('Administration barèmes'),
+                  value: 'admin-settings',
+                  child: Text('Paramètres administrateur'),
                 ),
                 PopupMenuItem(
                   value: 'about',
@@ -535,7 +535,7 @@ class _AccueilChronometrage extends StatelessWidget {
   }
 
   // ignore: unused_element
-  Future<void> _ouvrirAdministrationBaremes(BuildContext context) async {
+  Future<void> _ouvrirAdministrationBaremesLegacy(BuildContext context) async {
     final motDePasse = TextEditingController();
     final autorise = await showDialog<bool>(
       context: context,
@@ -694,8 +694,7 @@ class _AccueilChronometrage extends StatelessWidget {
     );
   }
 
-  Future<void> _ouvrirAdministrationBaremesSecurise(
-      BuildContext context) async {
+  Future<void> _ouvrirParametresAdminSecurises(BuildContext context) async {
     final autorise = await showDialog<bool>(
       context: context,
       builder: (_) => _DialogueMotDePasseAdmin(state: state),
@@ -711,7 +710,145 @@ class _AccueilChronometrage extends StatelessWidget {
     await Navigator.of(context).push<void>(
       MaterialPageRoute(
         fullscreenDialog: true,
+        builder: (_) => _EcranParametresAdmin(state: state),
+      ),
+    );
+  }
+
+  // ignore: unused_element
+  Future<void> _ouvrirAdministrationBaremes(
+    BuildContext context,
+  ) async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        fullscreenDialog: true,
         builder: (_) => _EcranAdministrationBaremes(state: state),
+      ),
+    );
+  }
+}
+
+class _EcranParametresAdmin extends StatelessWidget {
+  const _EcranParametresAdmin({required this.state});
+
+  final ChronometrageState state;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Paramètres administrateur')),
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            Text(
+              'Espace réservé aux fonctions sensibles: accès aux barèmes, sécurité administrateur et opérations système.',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 16),
+            _CarteActionAdmin(
+              icone: Icons.rule_folder_outlined,
+              titre: 'Administration barèmes',
+              description:
+                  'Modifier les règles de notation, les seuils et les bornes de chaque activité.',
+              onTap: () => _ouvrirAdministrationBaremes(context),
+            ),
+            const SizedBox(height: 12),
+            _CarteActionAdmin(
+              icone: Icons.lock_reset,
+              titre: 'Changer le mot de passe admin',
+              description:
+                  'Mettre à jour le mot de passe administrateur enregistré localement sous forme d’empreinte.',
+              onTap: () => _ouvrirChangementMotDePasse(context),
+            ),
+            const SizedBox(height: 12),
+            _CarteActionAdmin(
+              icone: Icons.verified_user_outlined,
+              titre: 'Sécurité locale',
+              description:
+                  'Le mot de passe administrateur est stocké localement sous forme de hash SHA-256. Les barèmes restent enregistrés sur cet appareil.',
+              onTap: null,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _ouvrirAdministrationBaremes(BuildContext context) async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => _EcranAdministrationBaremes(state: state),
+      ),
+    );
+  }
+
+  Future<void> _ouvrirChangementMotDePasse(BuildContext context) async {
+    final changeEffectue = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => _EcranChangementMotDePasseAdmin(state: state),
+      ),
+    );
+    if (changeEffectue != true || !context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Mot de passe administrateur mis à jour.'),
+      ),
+    );
+  }
+}
+
+class _CarteActionAdmin extends StatelessWidget {
+  const _CarteActionAdmin({
+    required this.icone,
+    required this.titre,
+    required this.description,
+    required this.onTap,
+  });
+
+  final IconData icone;
+  final String titre;
+  final String description;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: EdgeInsets.zero,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(icone, size: 22),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      titre,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(description),
+                  ],
+                ),
+              ),
+              if (onTap != null) ...[
+                const SizedBox(width: 8),
+                const Icon(Icons.chevron_right),
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -766,11 +903,6 @@ class _EcranAdministrationBaremesState
       appBar: AppBar(
         title: const Text('Administration barèmes'),
         actions: [
-          IconButton(
-            tooltip: 'Changer le mot de passe admin',
-            onPressed: _changerMotDePasseAdmin,
-            icon: const Icon(Icons.lock_reset),
-          ),
           IconButton(
             tooltip: 'Rafraîchir les barèmes',
             onPressed: _rafraichirBaremes,
@@ -840,11 +972,6 @@ class _EcranAdministrationBaremesState
                           .toList(),
                       onChanged: (value) => setState(() => _activiteId = value),
                     ),
-                  ),
-                  OutlinedButton.icon(
-                    onPressed: _changerMotDePasseAdmin,
-                    icon: const Icon(Icons.lock_reset),
-                    label: const Text('Changer mot de passe admin'),
                   ),
                   OutlinedButton.icon(
                     onPressed: _rafraichirBaremes,
@@ -969,21 +1096,6 @@ class _EcranAdministrationBaremesState
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Barèmes rechargés depuis le stockage local.'),
-      ),
-    );
-  }
-
-  Future<void> _changerMotDePasseAdmin() async {
-    final changeEffectue = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(
-        fullscreenDialog: true,
-        builder: (_) => _EcranChangementMotDePasseAdmin(state: widget.state),
-      ),
-    );
-    if (changeEffectue != true || !mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Mot de passe administrateur mis à jour.'),
       ),
     );
   }

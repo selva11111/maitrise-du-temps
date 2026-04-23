@@ -46,7 +46,7 @@ Dernier APK genere:
 C:\Users\cyberselva\Desktop\chrono_app\build\app\outputs\flutter-apk\app-debug.apk
 ```
 
-Derniere heure connue du fichier APK: 23/04/2026 11:46:26.
+Derniere heure connue du fichier APK: 23/04/2026 12:24:25.
 
 Serveur web lance sur:
 
@@ -82,6 +82,7 @@ http://127.0.0.1:5237
 - Nom visible de l'application change en `Maitrise du Temps`.
 - Logo interne et icone launcher Android remplaces par `maitrise_du_temps1.png`.
 - Menu `Administration baremes` ajoute.
+- Ecran `Paramètres administrateur` ajoute pour separer la securite et les operations sensibles de l edition des baremes.
 - Menu `Politique et contact` ajoute: application creee par `_STAN_` pour le 4RE, stockage local et bouton e-mail vers `instructeur.selva@gmail.com`.
 - Acces administration par mot de passe: `Castelnaudary2026+`.
 - Mot de passe administrateur maintenant stocke localement sous forme d empreinte SHA-256.
@@ -165,7 +166,7 @@ url_launcher: ^6.3.2
 - Ajouter export PDF.
 - Ajouter signature release Android.
 - Ajouter icone launcher Android avec `4re.png`.
-- Remplacer le mot de passe fixe par un vrai ecran de configuration si l'application part en production.
+- Ajouter export/import des parametres administrateur si l'application doit etre dupliquee sur plusieurs appareils.
 - Passer a SQLite seulement si les baremes deviennent multi-utilisateur ou si le volume de donnees depasse clairement le stockage local actuel.
 - Ajouter tests widget specifiques mobile.
 
